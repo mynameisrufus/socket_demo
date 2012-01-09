@@ -26,15 +26,18 @@ class Server
 
         socket.onmessage do |msg|
           puts "Server Received #{msg}"
+          sender_id = @sockets[socket]["id"]
           incoming = ActiveSupport::JSON.decode(msg)
           case incoming["kind"]
           when "register"
-            message = @sockets[socket].dup
+            message = {"id" => sender_id}
             message["kind"] = "registered"
+            puts message
             socket.send(message.to_json)
           else
-            if incoming.value
-              message = {"kind" => "update", "value" => incoming.value}
+            if incoming["value"]
+              message = {"kind" => "update", "sender_id" => sender_id, "value" => incoming["value"]}
+              puts message
               socket.send(message.to_json) 
             end           
           end
@@ -47,6 +50,8 @@ class Server
 
         socket.onerror {|e| puts "error: #{e}"}
       end
+      puts "Started websocket server"
     end
   end
 end
+
