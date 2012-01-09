@@ -19,31 +19,31 @@ class Server
       @sockets = {}
       EM::WebSocket.start(:host => @host, :port => @port) do |socket|
         socket.onopen do
-          puts "Client connected to Server"
+          puts "Client connected to Server on port #{@port}"
           @@max_id += 1
-          @sockets[socket] = {"id" => @@max_id}
+          @sockets[socket] = {"id" => @@max_id, "value" => ""}
         end
 
         socket.onmessage do |msg|
           puts "Server Received #{msg}"
-          sender_id = @sockets[socket]["id"]
+          id = @sockets[socket]["id"]
           incoming = ActiveSupport::JSON.decode(msg)
           case incoming["kind"]
           when "register"
-            message = {"id" => sender_id}
-            message["kind"] = "registered"
-            puts message
-            socket.send(message.to_json)
+            socket.send(register_message(id).to_json)
+            broadcast(id)            
           else
-            if incoming["value"]
-              message = {"kind" => "update", "sender_id" => sender_id, "value" => incoming["value"]}
-              puts message
-              socket.send(message.to_json) 
+            if incoming["value"] or incoming["color"]
+              message = {"kind" => "update", "id" => id, "color" => incoming["color"], "value" => incoming["value"]}
+              @sockets[socket]["value"] = incoming["value"]
+              send_to_all(message)
             end           
           end
         end
 
         socket.onclose do
+          id = @sockets[socket]["id"]
+          delete_message(id)
           @sockets.delete(socket)
           puts "Server closed"
         end
@@ -52,6 +52,43 @@ class Server
       end
       puts "Started websocket server"
     end
+  end
+  
+  def register_message(id)
+    message = {"id" => id}
+    message["kind"] = "registered"
+    message["world"] = world_state
+    message
+  end
+  
+  def broadcast(id)
+    message = {"id" => id}
+    message["kind"] = "add"
+    message["value"] = ""
+    send_to_all(message)
+  end
+  
+  def delete_message(id)
+    message = {"id" => id}
+    message["kind"] = "delete"
+    send_to_all(message)
+  end
+  
+  def send_to_all(message)
+    puts "sending to all: #{message}"
+    @sockets.each do |destination, value|
+      destination.send(message.to_json)
+    end
+  end
+  
+  def world_state
+    result = {}
+    @sockets.keys.collect do |socket|
+      id = @sockets[socket]["id"]
+      val = @sockets[socket]["value"]
+      result[id] = val
+    end
+    result
   end
 end
 
