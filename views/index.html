@@ -1,52 +1,54 @@
 <html>
-  <head>
-    <title>Socket Demo</title>
-    <style type="text/css" media="screen">
+<head>
+  <title>Socket Demo</title>
+  <style type="text/css" media="screen">
     body {
       font-size: 14px;
       font-family: Helvetica, Arial;
     }
     
-    #display {
-	  display: inline-table;
-      margin: 10px;
+    .red, #red {
+      background-color: red;
+    }
+	
+    #red, #green {
+      position: fixed;
+      top: 50%;
+      height: 50%;
+      width: 50%;
+    }
+	
+    #red {left: 0%}
+    #green {left: 50%;}
+  
+    .green, #green {
+      background-color: green;
     }
 
-    #me {
+    table {
+      width: 100%;
+      height: 25%;
+      border-collapse: collapse;
     }
     
-    .player {
-      padding: 3px;
-      width: 40px;
-      height: 20px;
-      background-color: white;
+    tr {
+      border: none;
+    }
+    
+    td {
+      margin: 0;
+      padding: 0;
       border: 1px solid black;
     }
-    
-	input[type="button"] {
-		border: 1px solid black;
-		background-color: white;
-		font-size: 24px;
-	}
-	
-	.red, #red {
-		background-color: red;
-	}
-	
-	
-	.green, #green {
-		background-color: green;
-	}
-	
-    </style>
-    <script src="jquery.js"></script>
+  </style>
+  <script src="jquery.js"></script>
   <script src="socket_demo.coffee"></script>
-  </head>
-  <body>
-    <h1>Socket Demo</h1>
-    <div id="display"></div>
-    <p>Me: <span id="me"></span></p>
-	<input type="button" name="red" value="red" id="red">
-	<input type="button" name="green" value="green" id="green">
-  </body>
+</head>
+<body>
+  <table>
+    <tr></tr>
+  </table>
+  <div id="red"></div>
+  <div id="green"></div>
+</body>
 </html>
