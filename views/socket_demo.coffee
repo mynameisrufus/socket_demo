@@ -1,39 +1,34 @@
 class Demo  
-  constructor: () ->
-    $(document).keypress (e) =>
-      char = String.fromCharCode(e.keyCode)
-      message = JSON.stringify({kind: "update", value: char})
-      console.log message
-      window.socket.send message
-  
-  connect: ->
-    window.socket = new WebSocket("ws://0.0.0.0:7070")
-    
+  constructor: ->
+    if WebSocket?
+      window.socket = new WebSocket("ws://192.168.1.3:7070")    
+    else
+      window.socket = new MozWebSocket("ws://192.168.1.3:7070")
+      
     window.socket.onopen = ->
       window.socket.send(JSON.stringify({kind: "register"}))
     
     window.socket.onmessage = (mess) ->
       if mess
         data =  jQuery.parseJSON(mess.data)
-        console.log(data)
         switch data["kind"]
           when "registered"
             $('#me').text(data["id"])
-            $.each(data["world"],  (key, value) -> window.add_player key, value)
+            
+            $.each(data["world"],  (key, color) ->
+              console.log(color)
+              window.add_player key, color)
           when "add"
-            window.add_player data["id"], data["value"]
+            window.add_player data["id"], data["color"]
           when "update"
             id = data["id"]
-            value = data["value"]
-            $("#value_#{id}").text(value)
             window.set_color(id, data["color"])
           when "delete"
-            $("##{data["id"]}").remove()
+            $("td##{data["id"]}").remove()
       
-window.add_player = (id, value) ->
+window.add_player = (id, color) ->
   if $("##{id}").length == 0
-    console.log("id: #{id}  value: #{value}")
-    $('#display').append("<div class='player' id='#{id}'>#{id}: <span id='value_#{id}'>#{value || ''}</span></div>")
+    $('tr').append("<td id='#{id}' class='#{color}'>&nbsp;</td>")
 
 window.set_color = (id, color) ->
   $("##{id}").removeClass("red")
@@ -43,9 +38,8 @@ window.set_color = (id, color) ->
 
 $(document).ready ->
   demo = new Demo
-  demo.connect()
   $("#red").click (e) =>
-    window.socket.send(JSON.stringify({kind: "update", value: " ", color: "red"}))
+    window.socket.send(JSON.stringify({kind: "update", color: "red"}))
   $("#green").click (e) =>
-    window.socket.send(JSON.stringify({kind: "update", value: " ", color: "green"}))
+    window.socket.send(JSON.stringify({kind: "update", color: "green"}))
   
