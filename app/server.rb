@@ -21,7 +21,7 @@ class Server
         socket.onopen do
           puts "Client connected to Server on port #{@port}"
           @@max_id += 1
-          @sockets[socket] = {"id" => @@max_id, "value" => ""}
+          @sockets[socket] = {"id" => @@max_id, "color" => "gray"}
         end
 
         socket.onmessage do |msg|
@@ -33,9 +33,11 @@ class Server
             socket.send(register_message(id).to_json)
             broadcast(id)            
           else
-            if incoming["value"] or incoming["color"]
-              message = {"kind" => "update", "id" => id, "color" => incoming["color"], "value" => incoming["value"]}
-              @sockets[socket]["value"] = incoming["value"]
+            if incoming["color"]
+              color = incoming["color"]
+              message = {"kind" => "update", "id" => id, "color" => color}
+              puts "setting #{id} to #{color}"
+              @sockets[socket]["color"] = color
               send_to_all(message)
             end           
           end
@@ -64,7 +66,7 @@ class Server
   def broadcast(id)
     message = {"id" => id}
     message["kind"] = "add"
-    message["value"] = ""
+    message["color"] = "gray"
     send_to_all(message)
   end
   
@@ -76,7 +78,7 @@ class Server
   
   def send_to_all(message)
     puts "sending to all: #{message}"
-    @sockets.each do |destination, value|
+    @sockets.each do |destination, color|
       destination.send(message.to_json)
     end
   end
@@ -85,9 +87,10 @@ class Server
     result = {}
     @sockets.keys.collect do |socket|
       id = @sockets[socket]["id"]
-      val = @sockets[socket]["value"]
-      result[id] = val
+      color = @sockets[socket]["color"]
+      result[id] = color
     end
+    ap "world_state = #{result}"
     result
   end
 end
