@@ -6,25 +6,47 @@
       font-size: 14px;
       font-family: Helvetica, Arial;
     }
-    #grid {
-      
-    }
     
+    #display {
+	  display: inline-table;
+      margin: 10px;
+    }
+
     #me {
     }
     
     .player {
-      width: 20px;
+      padding: 3px;
+      width: 40px;
       height: 20px;
-      
+      background-color: white;
+      border: 1px solid black;
     }
+    
+	input[type="button"] {
+		border: 1px solid black;
+		background-color: white;
+		font-size: 24px;
+	}
+	
+	.red, #red {
+		background-color: red;
+	}
+	
+	
+	.green, #green {
+		background-color: green;
+	}
+	
     </style>
     <script src="jquery.js"></script>
   <script src="socket_demo.coffee"></script>
   </head>
   <body>
     <h1>Socket Demo</h1>
-    <div id="grid"></div>
-    <div id="me"></div>
+    <div id="display"></div>
+    <p>Me: <span id="me"></span></p>
+	<input type="button" name="red" value="red" id="red">
+	<input type="button" name="green" value="green" id="green">
   </body>
 </html>
